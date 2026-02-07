@@ -14,16 +14,170 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      audit_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          lifecycle_context: Json | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          lifecycle_context?: Json | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          lifecycle_context?: Json | null
+        }
+        Relationships: []
+      }
+      card_forms: {
+        Row: {
+          created_at: string
+          form_type: Database["public"]["Enums"]["card_form_type"]
+          id: string
+          name: string
+          registered_at: string | null
+          schema_definition: Json
+          status: Database["public"]["Enums"]["card_form_status"]
+        }
+        Insert: {
+          created_at?: string
+          form_type: Database["public"]["Enums"]["card_form_type"]
+          id?: string
+          name: string
+          registered_at?: string | null
+          schema_definition: Json
+          status?: Database["public"]["Enums"]["card_form_status"]
+        }
+        Update: {
+          created_at?: string
+          form_type?: Database["public"]["Enums"]["card_form_type"]
+          id?: string
+          name?: string
+          registered_at?: string | null
+          schema_definition?: Json
+          status?: Database["public"]["Enums"]["card_form_status"]
+        }
+        Relationships: []
+      }
+      card_instances: {
+        Row: {
+          created_at: string
+          form_id: string
+          id: string
+          member_id: string
+          payload: Json
+        }
+        Insert: {
+          created_at?: string
+          form_id: string
+          id?: string
+          member_id: string
+          payload: Json
+        }
+        Update: {
+          created_at?: string
+          form_id?: string
+          id?: string
+          member_id?: string
+          payload?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_instances_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "card_forms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      card_issuances: {
+        Row: {
+          id: string
+          instance_id: string
+          invitee_locator: string | null
+          issued_at: string
+          issuer_id: string
+          recipient_member_id: string | null
+          resolved_at: string | null
+          status: Database["public"]["Enums"]["issuance_status"]
+        }
+        Insert: {
+          id?: string
+          instance_id: string
+          invitee_locator?: string | null
+          issued_at?: string
+          issuer_id: string
+          recipient_member_id?: string | null
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["issuance_status"]
+        }
+        Update: {
+          id?: string
+          instance_id?: string
+          invitee_locator?: string | null
+          issued_at?: string
+          issuer_id?: string
+          recipient_member_id?: string | null
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["issuance_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_issuances_instance_id_fkey"
+            columns: ["instance_id"]
+            isOneToOne: false
+            referencedRelation: "card_instances"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_audit_trail: {
+        Args: { p_entity_id: string; p_entity_type: string }
+        Returns: {
+          action: string
+          actor_id: string
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          lifecycle_context: Json
+        }[]
+      }
+      get_issued_card_instance: {
+        Args: { p_issuance_id: string }
+        Returns: {
+          created_at: string
+          form_id: string
+          instance_id: string
+          payload: Json
+        }[]
+      }
     }
     Enums: {
-      [_ in never]: never
+      card_form_status: "draft" | "registered"
+      card_form_type: "entity" | "data" | "use"
+      issuance_status: "issued" | "accepted" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +304,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      card_form_status: ["draft", "registered"],
+      card_form_type: ["entity", "data", "use"],
+      issuance_status: ["issued", "accepted", "rejected"],
+    },
   },
 } as const
