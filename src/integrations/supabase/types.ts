@@ -177,6 +177,18 @@ export type Database = {
           payload: Json
         }[]
       }
+      get_my_recent_audit: {
+        Args: { p_limit?: number }
+        Returns: {
+          action: string
+          actor_id: string
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          lifecycle_context: Json
+        }[]
+      }
       issue_card: {
         Args: {
           p_instance_id: string

@@ -2,17 +2,27 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 const navLinks = [
   { to: "/forms", label: "Forms" },
   { to: "/forms/register", label: "Register Form" },
   { to: "/instances", label: "My Instances" },
   { to: "/reviews", label: "Reviews" },
+  { to: "/audit", label: "Audit" },
 ];
 
 export function AppLayout() {
   const { user, signOut } = useAuth();
   const location = useLocation();
+  const { toast } = useToast();
+
+  const copyUserId = () => {
+    if (!user?.id) return;
+    navigator.clipboard.writeText(user.id).then(() => {
+      toast({ title: "Copied", description: "User ID copied to clipboard." });
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -37,9 +47,13 @@ export function AppLayout() {
           ))}
         </div>
         <div className="ml-auto flex items-center gap-3 shrink-0">
-          <span className="text-xs text-muted-foreground font-mono truncate max-w-[160px]">
-            {user?.email}
-          </span>
+          <button
+            onClick={copyUserId}
+            className="text-xs text-muted-foreground font-mono truncate max-w-[160px] hover:text-foreground transition-colors cursor-pointer"
+            title={`Click to copy: ${user?.id}`}
+          >
+            {user?.id ? user.id.slice(0, 8) + "…" : user?.email}
+          </button>
           <Button variant="ghost" size="sm" onClick={signOut}>
             Sign out
           </Button>
