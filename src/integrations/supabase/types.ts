@@ -44,6 +44,44 @@ export type Database = {
         }
         Relationships: []
       }
+      card_deliveries: {
+        Row: {
+          created_at: string
+          id: string
+          invitee_locator: string | null
+          issuance_id: string
+          recipient_member_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invitee_locator?: string | null
+          issuance_id: string
+          recipient_member_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invitee_locator?: string | null
+          issuance_id?: string
+          recipient_member_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_deliveries_issuance_id_fkey"
+            columns: ["issuance_id"]
+            isOneToOne: false
+            referencedRelation: "card_issuances"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       card_forms: {
         Row: {
           created_at: string
