@@ -2,41 +2,41 @@
 
 This document records **intentional Alpha decisions** for OPN4 (Trust & Control Plane — Opn.li / Openly Trusted Services).
 
-Alpha decisions are *not* accidents or technical debt.
+Alpha decisions are _not_ accidents or technical debt.
 
 They are **deliberate scaffolding** used to validate trust lifecycle semantics under controlled conditions before MVP hardening.
 
 All Alpha decisions must:
 
--   Name the constraint
+- Name the constraint
 
--   Describe the shortcut taken
+- Describe the shortcut taken
 
--   State the implication
+- State the implication
 
--   Describe how the decision will be revisited or removed in a future sprint
+- Describe how the decision will be revisited or removed in a future sprint
 
-***
+---
 
 ## Alpha Operating Constraints
 
 The OPN4 Alpha operates under the following declared constraints:
 
--   No outbound email, SMS, or push notifications exist
+- No outbound email, SMS, or push notifications exist
 
--   All user identities use fake or test accounts
+- All user identities use fake or test accounts
 
--   A single human may play multiple roles (issuer, recipient, administrator)
+- A single human may play multiple roles (issuer, recipient, administrator)
 
--   All trust lifecycle steps must be observable inside the application or Supabase dashboard
+- All trust lifecycle steps must be observable inside the application or Supabase dashboard
 
--   Payload validation against the CARD v0.1 JSON Schema is declared but not yet enforced
+- Payload validation against the CARD v0.1 JSON Schema is declared but not yet enforced
 
--   The goal is to validate **trust mechanics and lifecycle invariants**, not production UX realism
+- The goal is to validate **trust mechanics and lifecycle invariants**, not production UX realism
 
 These constraints are intentional and must not be silently worked around.
 
-***
+---
 
 ## Decision A-001: Three-plane architecture is declared but only one plane is built
 
@@ -48,7 +48,7 @@ These constraints are intentional and must not be silently worked around.
 
 **MVP Transition** Connect the Trust & Control Plane to a real PDV instance. Replace placeholder URIs with live resource references. Validate that CARD-gated access actually controls what data an agent or recipient can retrieve.
 
-***
+---
 
 ## Decision A-002: CARD payload is freeform JSON — schema validation is deferred
 
@@ -60,7 +60,7 @@ These constraints are intentional and must not be silently worked around.
 
 **MVP Transition** Extend `enforce_registered_form()` to perform jsonb schema validation against `card_forms.schema_definition` at INSERT time. Malformed payloads must return `PAYLOAD_INVALID`. Addressed in S1-2.
 
-***
+---
 
 ## Decision A-003: Invitation delivery occurs in-app only
 
@@ -72,7 +72,7 @@ These constraints are intentional and must not be silently worked around.
 
 **MVP Transition** Wire `invitee_locator` to an outbound email or SMS delivery service when `issue_card()` creates a delivery with `recipient_member_id IS NULL`. Modeled on OPN3 A-002.
 
-***
+---
 
 ## Decision A-004: Authentication is required for all trust acts — no anonymous flows
 
@@ -84,7 +84,7 @@ These constraints are intentional and must not be silently worked around.
 
 **MVP Transition** Consider signed, time-bound invitation tokens that allow pre-authentication preview of CARD content before requiring account creation — improving conversion without weakening trust enforcement. Modeled on OPN3 A-004.
 
-***
+---
 
 ## Decision A-005: SQL editor testing requires direct table access — RPCs not testable without a session
 
@@ -96,7 +96,7 @@ These constraints are intentional and must not be silently worked around.
 
 **MVP Transition** Write integration tests that run against the Supabase local emulator with seeded JWT sessions, allowing full RPC coverage without manual UI interaction.
 
-***
+---
 
 ## Decision A-006: Migration history contains a corrected baseline — original migrations are superseded
 
@@ -108,7 +108,7 @@ These constraints are intentional and must not be silently worked around.
 
 **MVP Transition** From Sprint 1 onwards, each schema change is a discrete forward migration. The S0-1 baseline is the starting point. No further consolidation of migration history is planned.
 
-***
+---
 
 ## Decision A-007: Dead code removed — log_blocked_audit() and dblink are gone
 
@@ -120,7 +120,7 @@ These constraints are intentional and must not be silently worked around.
 
 **MVP Transition** No action required. This decision is permanent.
 
-***
+---
 
 ## Decision A-008: card_instances has no versioning columns in Sprint 0
 
@@ -132,7 +132,7 @@ These constraints are intentional and must not be silently worked around.
 
 **MVP Transition** Sprint 2 task S2-1 adds `superseded_by`, `superseded_at`, and `is_current` columns. S2-2 adds the `supersede_card_instance()` RPC. This is a direct port of OPN3 A-015 onto the OPN4 foundation.
 
-***
+---
 
 ## Decision A-009: Revocation is not implemented in Sprint 0
 
@@ -144,7 +144,7 @@ These constraints are intentional and must not be silently worked around.
 
 **MVP Transition** Sprint 2 task S2-3 adds `revoke_card_issuance()` RPC, which sets `status = 'revoked'` on both the issuance and delivery rows, logs a `card_revoked` audit event, and does not delete anything. The `card_issuance_status` enum must be extended to include `revoked`.
 
-***
+---
 
 ## Decision A-010: OPN4.001 closure — thread is closed at Sprint 0
 
@@ -158,21 +158,21 @@ These constraints are intentional and must not be silently worked around.
 
 **MVP Transition** Sprint 1 begins. The Trust & Control Plane substrate is sound. Subsequent sprints make CARDs real (Sprint 1), add lifecycle (Sprint 2), build the first real-world demo scenario (Sprint 3), and harden for partner readiness (Sprint 4).
 
-***
+---
 
 ## How to Use This Document
 
--   Each new Alpha shortcut must be recorded as a new decision (A-011, A-012, …)
+- Each new Alpha shortcut must be recorded as a new decision (A-011, A-012, …)
 
--   Decisions are never deleted or rewritten — they are the permanent record of intentional choices
+- Decisions are never deleted or rewritten — they are the permanent record of intentional choices
 
--   Sprint planning must explicitly reference these decisions when removing Alpha scaffolding
+- Sprint planning must explicitly reference these decisions when removing Alpha scaffolding
 
--   At the start of each Claude session, this document and the Master Specification should both be attached
+- At the start of each Claude session, this document and the Master Specification should both be attached
 
 This document is part of the OPN4 system architecture.
 
-***
+---
 
 ## Decision A-011: Revise CARD form pre-population is incomplete
 
@@ -198,4 +198,24 @@ Fix DynamicCardForm to correctly bind all nested initialPayload fields to
 their corresponding input components, including parties, claims, policy,
 and lifecycle sections.
 
-*OPN4 Alpha Decisions Log v1.0 \| Opn.li / Openly Trusted Services \| February 11, 2026 \| Confidential*
+_OPN4 Alpha Decisions Log v1.0 \| Opn.li / Openly Trusted Services \| February 11, 2026 \| Confidential_
+
+**DELIVERABLE 1: A-014 Decision Entry**
+
+A complete Alpha Decision entry modeled on the OPN3 format. It documents:
+
+- Why revocation is issuance-level (not instance-level)
+
+- Why only the issuer can revoke (recipient has reject)
+
+- Why records are preserved (soft deletion via status)
+
+- The valid status transitions and what's prevented
+
+- Implementation details (RPC signature, enum extension, RLS impact)
+
+- UI flow with confirmation dialog
+
+- What was deferred for post-Alpha (grace periods, revocation reasons, cascade rules)
+
+- All closure criteria with checkmarks
