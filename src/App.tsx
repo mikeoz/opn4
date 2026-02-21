@@ -12,6 +12,7 @@ import CreateInstance from "./pages/CreateInstance";
 import MyInstances from "./pages/MyInstances";
 import PendingReviews from "./pages/PendingReviews";
 import AuditTrail from "./pages/AuditTrail";
+import NewUseCard from "./pages/NewUseCard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +38,7 @@ const App = () => (
             <Route path="/instances/create" element={<CreateInstance />} />
             <Route path="/reviews" element={<PendingReviews />} />
             <Route path="/audit" element={<AuditTrail />} />
+            <Route path="/cards/use/new" element={<NewUseCard />} />
           </Route>
           <Route path="/" element={<Navigate to="/forms" replace />} />
           <Route path="*" element={<NotFound />} />
