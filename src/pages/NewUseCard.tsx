@@ -30,7 +30,7 @@ const ENTITY_FORM_ID = "96583b62-2ee5-40e3-a633-fb14e88e888b";
 const USE_FORM_ID = "72d0ae00-091e-4c20-a183-0090bc12a888";
 const DEMO_USER_ID = "311eb40e-5061-4e4b-96a4-bc13720ebae1";
 
-const STEPS = ["Agent", "Data Scope", "Permissions", "Duration", "Review"];
+const STEPS = ["Who gets the permission?", "What can they see?", "What can they do?", "How long does it last?", "Review and send"];
 
 interface AgentOption {
   id: string;
@@ -356,8 +356,8 @@ export default function NewUseCard() {
       // Step C: success
       const dataTitles = selectedDataCardsList.map((dc) => dc.title).join(", ");
       toast({
-        title: "Use CARD issued",
-        description: `${agent.name} now has access to ${dataTitles} for ${durationLabel(effectiveDuration)}.`,
+        title: "Permission sent",
+        description: `${agent.name} can now access ${dataTitles} for ${durationLabel(effectiveDuration)}. You can close the door at any time from My Front Door.`,
         duration: Infinity,
       });
       navigate("/instances");
@@ -374,7 +374,7 @@ export default function NewUseCard() {
       case 0:
         return (
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Which AI agent are you authorizing?</h2>
+            <h2 className="text-xl font-semibold">Who gets the permission?</h2>
             {loadingAgents ? (
               <div className="flex items-center gap-2 text-muted-foreground py-8">
                 <Loader2 className="w-4 h-4 animate-spin" /> Loading agents…
@@ -416,7 +416,7 @@ export default function NewUseCard() {
         return (
           <div className="space-y-4">
             <div>
-              <h2 className="text-xl font-semibold">What data can this agent access?</h2>
+              <h2 className="text-xl font-semibold">What can they see?</h2>
               <p className="text-sm text-muted-foreground mt-1">
                 Check the data categories you are authorizing. The agent can ONLY access what you check here.
               </p>
@@ -449,7 +449,7 @@ export default function NewUseCard() {
                           <p className="font-medium">{dc.title}</p>
                         </div>
                         <Badge variant="destructive" className="text-xs shrink-0">
-                          HIGH SENSITIVITY
+                          🔴 HIGH SENSITIVITY
                         </Badge>
                       </CardContent>
                     </Card>
@@ -468,7 +468,7 @@ export default function NewUseCard() {
       case 2:
         return (
           <div className="space-y-6">
-            <h2 className="text-xl font-semibold">What can the agent do with this data?</h2>
+            <h2 className="text-xl font-semibold">What can they do with this data?</h2>
 
             <div className="space-y-4">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
@@ -526,7 +526,7 @@ export default function NewUseCard() {
       case 3:
         return (
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold">How long does this authorization last?</h2>
+            <h2 className="text-xl font-semibold">How long does it last?</h2>
             <RadioGroup value={duration} onValueChange={setDuration} className="space-y-3">
               {DURATION_OPTIONS.map((opt) => (
                 <div key={opt.value} className="flex items-center gap-3">
@@ -567,7 +567,7 @@ export default function NewUseCard() {
         const effectiveDuration = duration === "custom" ? "custom" : duration;
         return (
           <div className="space-y-6">
-            <h2 className="text-xl font-semibold">Review and issue this Use CARD</h2>
+            <h2 className="text-xl font-semibold">Review and send this permission slip</h2>
 
             <Card>
               <CardContent className="p-6 space-y-4">
@@ -623,6 +623,12 @@ export default function NewUseCard() {
 
   return (
     <div className="space-y-6">
+      <div className="rounded-lg bg-vault-green/10 border border-vault-green/30 p-4">
+        <p className="font-semibold text-vault-green">You are writing a permission slip.</p>
+        <p className="text-sm text-muted-foreground mt-1">
+          You choose the agent, what they can see, what they can do, and when access ends. You can close the door at any time.
+        </p>
+      </div>
       <Stepper current={step} />
       {renderStep()}
 
@@ -647,10 +653,10 @@ export default function NewUseCard() {
           >
             {issuing ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin mr-2" /> Issuing…
+                <Loader2 className="w-4 h-4 animate-spin mr-2" /> Sending…
               </>
             ) : (
-              "Issue Use CARD"
+              "Send this permission slip"
             )}
           </Button>
         )}
