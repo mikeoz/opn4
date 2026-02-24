@@ -1,20 +1,140 @@
+import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { CopyIdButton } from "@/components/CopyIdButton";
+
+const ENTITY_FORM_ID = "96583b62-2ee5-40e3-a633-fb14e88e888b";
+
+const KIND_STYLE: Record<string, string> = {
+  agent: "bg-teal-100 text-teal-800 border-teal-200",
+  person: "bg-blue-100 text-blue-800 border-blue-200",
+  org: "bg-gray-100 text-gray-700 border-gray-200",
+};
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+}
+
+function truncateUrn(urn: string): string {
+  const after = urn.replace("urn:uuid:", "");
+  return after.slice(0, 16) + "…";
+}
+
+interface EntityRow {
+  id: string;
+  payload: any;
+  created_at: string;
+}
 
 export default function Entities() {
   usePageTitle(useLocation().pathname);
+  const [entities, setEntities] = useState<EntityRow[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      setLoading(true);
+      const { data } = await supabase
+        .from("card_instances")
+        .select("id, payload, created_at")
+        .eq("form_id", ENTITY_FORM_ID)
+        .order("created_at", { ascending: false });
+
+      // Deduplicate by payload.card.id — keep first (most recent)
+      const seen = new Set<string>();
+      const deduped: EntityRow[] = [];
+      (data || []).forEach((row: any) => {
+        const cardId = row.payload?.card?.id;
+        if (cardId && seen.has(cardId)) return;
+        if (cardId) seen.add(cardId);
+        deduped.push(row);
+      });
+
+      setEntities(deduped);
+      setLoading(false);
+    }
+    load();
+  }, []);
 
   return (
     <div>
-      <h1 className="text-xl font-semibold mb-2">Entities &amp; Agents</h1>
+      <h1 className="text-xl font-semibold mb-1">Entities &amp; Agents</h1>
       <p className="text-sm text-muted-foreground mb-6">
-        The people, organisations, and AI agents in your trust network.
+        Everyone in your trust network — people, organizations, and agents.
       </p>
-      <div className="rounded-lg border border-dashed border-border p-8 text-center">
-        <p className="text-sm text-muted-foreground">
-          Entity and agent management is coming soon.
-        </p>
-      </div>
+
+      {loading ? (
+        <p className="text-sm text-muted-foreground">Loading…</p>
+      ) : entities.length === 0 ? (
+        <div className="rounded-lg border border-dashed border-border p-8 text-center">
+          <p className="text-sm text-muted-foreground">
+            No entities or agents registered yet.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {entities.map((row) => {
+            const p = row.payload as any;
+            const subject = p?.parties?.subject;
+            const name = subject?.display_name || p?.card?.title || "Unnamed";
+            const kind = subject?.kind || "entity";
+            const operator = p?.parties?.operator?.display_name;
+            const claim = p?.claims?.items?.[0];
+            const caps = claim?.agent_metadata?.capabilities;
+            const model = claim?.agent_metadata?.model;
+            const modelStr = model ? `${model.provider} / ${model.name}` : null;
+            const status = p?.lifecycle?.status;
+            const agentId = subject?.id || "";
+
+            return (
+              <Card key={row.id} className="border-l-4 overflow-hidden" style={{ borderLeftColor: "#1F4E8C" }}>
+                <CardContent className="p-4 space-y-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-semibold text-base leading-tight">{name}</span>
+                    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${KIND_STYLE[kind] || KIND_STYLE.org}`}>
+                      {kind}
+                    </span>
+                    {status === "active" && (
+                      <span className="inline-flex items-center gap-1 text-xs text-vault-green font-medium">
+                        <span className="inline-block h-2 w-2 rounded-full bg-vault-green" />
+                        Active
+                      </span>
+                    )}
+                  </div>
+
+                  {operator && (
+                    <p className="text-xs text-muted-foreground">Operated by: {operator}</p>
+                  )}
+
+                  {caps && Array.isArray(caps) && caps.length > 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      Capabilities: {caps.map((c: string) => c.charAt(0).toUpperCase() + c.slice(1)).join(", ")}
+                    </p>
+                  )}
+
+                  {modelStr && (
+                    <p className="text-xs text-muted-foreground">Model: {modelStr}</p>
+                  )}
+
+                  <div className="flex items-center justify-between pt-2 text-xs text-muted-foreground/70">
+                    <span>Registered {formatDate(row.created_at)}</span>
+                  </div>
+
+                  {agentId && (
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground/60">
+                      <span className="font-mono">{truncateUrn(agentId)}</span>
+                      <CopyIdButton value={agentId} label="ID" variant="inline" className="text-muted-foreground/60" />
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
