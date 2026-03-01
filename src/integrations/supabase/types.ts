@@ -201,11 +201,46 @@ export type Database = {
           },
         ]
       }
+      rate_limits: {
+        Row: {
+          endpoint: string
+          id: string
+          identifier: string
+          requested_at: string
+        }
+        Insert: {
+          endpoint?: string
+          id?: string
+          identifier: string
+          requested_at?: string
+        }
+        Update: {
+          endpoint?: string
+          id?: string
+          identifier?: string
+          requested_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      check_rate_limit: {
+        Args: {
+          p_endpoint?: string
+          p_global_limit?: number
+          p_identifier: string
+          p_per_id_limit?: number
+          p_window_seconds?: number
+        }
+        Returns: boolean
+      }
+      cleanup_rate_limits: {
+        Args: { p_max_age_seconds?: number }
+        Returns: number
+      }
       create_card_instance: {
         Args: { p_form_id: string; p_payload: Json }
         Returns: {
